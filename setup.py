@@ -1,15 +1,27 @@
-try:
-    import os
+import os
+
+import wget
+import time
+import json
+import platform
+import subprocess
+from colorama import Fore, init
+
+def get_distro():
+    os_release = open('/etc/os-release', 'r').read().split('\n')
+    for i in os_release:
+        i = i.split('=')
+        if i[0] == 'ID':
+            return i[-1]
+
+if get_distro() == 'debian':
+    os.system('pip install deb')
     import apt
-    import wget
-    import time
-    import json
-    import platform
-    import subprocess
-    from colorama import Fore, init
-except ImportError:
-    import os
-    os.system('sudo pip3 install wget python3-wget')
+
+if get_distro() == 'arch':
+    os.system("pip install python-pacman")
+    import pacman
+
 
 init()
 
@@ -17,13 +29,20 @@ def clear():
     os.system('clear')
 
 def qemuexists():
-    cache = apt.Cache()
-    cache.open()
-    pkg = cache['qemu-system-x86']
-    clear()
-    print(f'{Fore.YELLOW}Checking for Q.EMU...')
-    time.sleep(2)
-    if pkg.is_installed:
+    distro = get_distro()
+    if distro == 'debian':
+        cache = apt.Cache()
+        cache.open()
+        pkg = cache['qemu-system-x86']
+        clear()
+        print(f'{Fore.YELLOW}Checking for Q.EMU...')
+        time.sleep(2)
+        is_installed = pkg.is_installed
+    
+    elif distro == 'arch':
+        is_installed = pacman.is_installed("qemu-system-x86")
+
+    if is_installed:
         clear()
         print(f'{Fore.GREEN}Q.EMU is already installed!')
         time.sleep(2)
@@ -34,7 +53,11 @@ def qemuexists():
         print(f'{Fore.GREEN}Downloading Q.EMU...{Fore.RESET}')
         time.sleep(2)
         try:
-            os.system('sudo apt-get install qemu-system-x86 -y')
+            if distro == 'debian':
+                os.system('sudo apt-get install qemu-system-x86 -y')
+            elif distro == 'arch':
+                os.system('sudo pacman -S qemu-system-x86 -y')
+
         except:
             print(f'{Fore.RED}Unable to install Q.EMU! Please try installing manually!')
             time.sleep(3)
@@ -97,7 +120,7 @@ def startandroid():
         time.sleep(2)
         os.system(f'sudo bash normal.sh')
 
-if 'Linux' in platform.platform() == True:
+if 'Linux' in platform.platform():
     if not os.path.isfile('Android.iso') == True:
         clear()
         print(f'{Fore.RED}Android.iso was not found!\n')

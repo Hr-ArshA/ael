@@ -1,0 +1,5 @@
+colorama==0.4.6
+hurry.filesize==0.9
+python3-wget==0.0.2b1
+setuptools==73.0.1
+wget==3.2
